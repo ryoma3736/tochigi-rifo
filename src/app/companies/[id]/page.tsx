@@ -1,5 +1,6 @@
 import { companies } from "@/data/companies"
 import Link from "next/link"
+import InstagramEmbed from "@/components/InstagramEmbed"
 
 type Props = { params: { id: string } }
 
@@ -15,9 +16,7 @@ export default function CompanyPage({ params }: Props) {
       <p className="text-sm">
         Instagram: <Link href={`https://www.instagram.com/${company.instagramHandle}/`} className="text-blue-600 underline" target="_blank">@{company.instagramHandle}</Link>
       </p>
-      <div className="rounded border p-4 text-sm text-gray-600">
-        Instagramの埋め込みはAPI接続が必要です。現状はプロフィールリンクの提供に留めています。
-      </div>
+      <InstagramEmbed handle={company.instagramHandle} postUrl={company.instagramPostUrl} className="mt-2" />
       <Link href="/" className="text-blue-600 underline text-sm">戻る</Link>
     </main>
   )
