@@ -1,26 +1,836 @@
 @import "tailwindcss";
 
+/* =============================================================================
+   栃木リフォームポータル — Warm "reform" restyle layer (v8)
+   preset = warm（地域リフォーム = 親しみ・信頼・明るさ・木の温かみ）。
+   デザインのみ: 構造 / 文言 / 画像 / リンク / 機能は不変。既存 Tailwind utility の
+   「見た目」だけを LIGHT(白×木目) トークンへ再定義する（markup は書き換えない）。
+   すべて [data-premium="trust"] にスコープ（layout の data 属性は不変のまま流用）。
+   before = near-black + Sky Blue + Sora → after = 明るい白木目 + リフォーム橙/緑 + 丸ゴシック。
+   丸ゴシック（Zen Maru Gothic / M PLUS Rounded 1c）は layout.tsx の next/font で
+   ロードし --font-rounded / --font-rounded-body 変数として供給する。Sora 廃止。
+   ============================================================================= */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf7f2;
+  --foreground: #2c2a26;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-rounded-body), var(--font-rounded), "M PLUS Rounded 1c",
+    system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
+/* -------------------------------------------------------------------------- */
+/* Warm "reform" tokens（明るい白×木目）                                       */
+/* -------------------------------------------------------------------------- */
+[data-premium="trust"] {
+  --c-bg: #faf7f2;        /* ページ地: 暖かいオフホワイト（木の光） */
+  --c-bg-2: #f4efe6;      /* 一段下げた地（セクション区切り） */
+  --c-surface: #ffffff;   /* カード面: 純白 */
+  --c-surface-2: #fbf8f2; /* 入力など、ごく淡いベージュ */
+  --c-text: #2c2a26;      /* 温かみのある墨: 対 #faf7f2 ≈ 12.8:1 (AAA) */
+  --c-muted: #6f6a60;     /* muted: 対 #faf7f2 ≈ 4.9:1 (AA) */
+  --c-faint: #8a8478;     /* さらに控えめ（プレースホルダ等） */
+  --c-line: #e7ddcd;      /* hairline: 木のベージュ境界 */
+  --c-line-strong: #d8cab2;
+
+  /* アクセント: リフォーム橙（主役）+ 緑（補助）。Sky Blue は使わない。 */
+  --c-accent: #e8732e;        /* リフォーム橙 */
+  --c-accent-deep: #cf5f1f;   /* hover で深まる橙 */
+  --c-accent-ink: #ffffff;    /* 橙面上の文字 */
+  --c-accent-soft: #fcefe3;   /* 橙の淡い面（選択チップ・選択カテゴリ） */
+  --c-accent-line: #f0b48a;   /* 橙の境界 */
+  --c-green: #3a9d5d;         /* 信頼の緑（補助アクセント） */
+  --c-green-deep: #2f8049;
+  --c-green-soft: #e7f4ec;
+  --c-green-line: #a9d8bb;
+
+  /* 柔らかい影・角丸大きめ（親しみ） */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --shadow-soft: 0 1px 2px rgba(120, 96, 60, 0.04), 0 6px 18px rgba(120, 96, 60, 0.08);
+  --shadow-soft-lg: 0 2px 6px rgba(120, 96, 60, 0.06), 0 14px 36px rgba(120, 96, 60, 0.13);
+
+  /* next/font 変数 (--font-rounded = Zen Maru, --font-rounded-body = M PLUS Rounded)
+     を優先し、未ロード時は Google Fonts @import / OS の丸ゴシックへフォールバック。 */
+  --font-head: var(--font-rounded), "Zen Maru Gothic", "M PLUS Rounded 1c",
+    "Hiragino Maru Gothic ProN", "Hiragino Kaku Gothic ProN",
+    "Yu Gothic", "Noto Sans JP", system-ui, sans-serif;
+  --font-body: var(--font-rounded-body), "M PLUS Rounded 1c", "Zen Maru Gothic",
+    "Hiragino Maru Gothic ProN", "Hiragino Kaku Gothic ProN",
+    "Yu Gothic", "Noto Sans JP", system-ui, sans-serif;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font-body);
+  color-scheme: light;
+}
+
+/* light 固定（dark スキームへ落とさない: 地域住民向けは常に明るく） */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #faf7f2;
+    --foreground: #2c2a26;
+  }
+}
+
+[data-premium="trust"] body {
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font-body);
+  line-break: strict;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: 0.005em;
+}
+
+/* 背景: ごく淡い木目グラデ（暖色）。紫グラデ禁止 → 暖かいベージュ〜橙のヒントのみ。 */
+[data-premium="trust"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(115% 70% at 50% -8%, rgba(232, 115, 46, 0.07), transparent 55%),
+    radial-gradient(90% 60% at 100% 100%, rgba(58, 157, 93, 0.05), transparent 60%),
+    var(--c-bg);
+}
+
+/* =============================================================================
+   Typography — 丸ゴシック / 読みやすい大きめ文字 / 本文 1.85
+   ============================================================================= */
+[data-premium="trust"] h1,
+[data-premium="trust"] h2 {
+  font-family: var(--font-head);
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  line-height: 1.28;
+  text-wrap: balance;
+  color: var(--c-text);
+}
+[data-premium="trust"] h3,
+[data-premium="trust"] h4 {
+  font-family: var(--font-head);
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  color: var(--c-text);
+}
+/* hero 級の見出し（トップの h2「…をお考えですか？」など）を親しみのある大型に */
+[data-premium="trust"] .text-2xl {
+  font-size: clamp(1.75rem, 4vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.005em;
+}
+[data-premium="trust"] .text-xl {
+  letter-spacing: 0.005em;
+}
+[data-premium="trust"] p {
+  line-height: 1.85;
+}
+[data-premium="trust"] .tabular-nums,
+[data-premium="trust"] [class*="text-"][class*="font-medium"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* =============================================================================
+   Utility remap — 既存 Tailwind クラスの「色 / 面 / 境界 / 影 / 角丸」を再定義
+   ============================================================================= */
+
+/* ---- 面（背景） ---- */
+[data-premium="trust"] .bg-white { background-color: var(--c-surface) !important; }
+[data-premium="trust"] .bg-gray-50 { background-color: var(--c-bg) !important; }
+[data-premium="trust"] .bg-gray-100 { background-color: var(--c-bg-2) !important; }
+[data-premium="trust"] .bg-gray-200 { background-color: #ece3d4 !important; }
+
+/* ---- テキスト ---- */
+[data-premium="trust"] .text-gray-900,
+[data-premium="trust"] .text-gray-800,
+[data-premium="trust"] .text-gray-700 { color: var(--c-text) !important; }
+[data-premium="trust"] .text-gray-600,
+[data-premium="trust"] .text-gray-500 { color: var(--c-muted) !important; }
+[data-premium="trust"] .text-gray-400 { color: var(--c-faint) !important; }
+[data-premium="trust"] .text-white { color: #ffffff !important; }
+
+/* ---- accent: blue 系（旧 trust-blue / Sky Blue）→ リフォーム橙に統一 ---- */
+[data-premium="trust"] .text-blue-700,
+[data-premium="trust"] .text-blue-600 { color: var(--c-accent) !important; }
+[data-premium="trust"] .bg-blue-600 { background-color: var(--c-accent) !important; }
+[data-premium="trust"] .bg-blue-50 { background-color: var(--c-accent-soft) !important; }
+[data-premium="trust"] .border-blue-400 { border-color: var(--c-accent-line) !important; }
+[data-premium="trust"] .hover\:bg-blue-700:hover { background-color: var(--c-accent-deep) !important; }
+[data-premium="trust"] [class*="hover:bg-blue-700"]:hover { filter: brightness(0.96); }
+
+/* primary ボタン（bg-blue-600 text-white）: 橙面の上は白文字で可読性確保 */
+[data-premium="trust"] .bg-blue-600.text-white { color: #ffffff !important; }
+
+/* ---- accent: pink 系（Navigation の active / cart バッジ）も橙に ---- */
+[data-premium="trust"] .text-pink-700,
+[data-premium="trust"] .text-pink-800 { color: var(--c-accent) !important; }
+[data-premium="trust"] .border-pink-500 { border-color: var(--c-accent) !important; }
+[data-premium="trust"] .bg-pink-500 { background-color: var(--c-accent) !important; }
+[data-premium="trust"] .bg-pink-50 { background-color: var(--c-accent-soft) !important; }
+[data-premium="trust"] .bg-pink-100 { background-color: var(--c-accent-soft) !important; }
+[data-premium="trust"] .text-pink-700.bg-pink-50,
+[data-premium="trust"] .bg-pink-50 .text-pink-700 { color: var(--c-accent-deep) !important; }
+[data-premium="trust"] .focus\:ring-pink-500:focus { --tw-ring-color: var(--c-accent) !important; }
+
+/* ---- 補助アクセント（sky / teal / indigo / violet / purple / lime）→ 橙 or 緑 ---- */
+[data-premium="trust"] .text-purple-600,
+[data-premium="trust"] .text-purple-700,
+[data-premium="trust"] .text-indigo-600,
+[data-premium="trust"] .text-indigo-700,
+[data-premium="trust"] .text-violet-600,
+[data-premium="trust"] .text-sky-600,
+[data-premium="trust"] .text-sky-700,
+[data-premium="trust"] .text-blue-800,
+[data-premium="trust"] .text-blue-900,
+[data-premium="trust"] .text-blue-500 { color: var(--c-accent) !important; }
+/* teal/lime は補助の「緑」へ寄せる（リフォーム＝木・植栽の緑） */
+[data-premium="trust"] .text-teal-600,
+[data-premium="trust"] .text-teal-700,
+[data-premium="trust"] .text-lime-600,
+[data-premium="trust"] .text-lime-700 { color: var(--c-green) !important; }
+[data-premium="trust"] .bg-sky-600 { background-color: var(--c-accent) !important; }
+[data-premium="trust"] .bg-sky-50 { background-color: var(--c-accent-soft) !important; }
+[data-premium="trust"] .border-sky-400 { border-color: var(--c-accent-line) !important; }
+[data-premium="trust"] .hover\:bg-sky-700:hover,
+[data-premium="trust"] [class*="hover:bg-sky-700"]:hover { background-color: var(--c-accent-deep) !important; }
+[data-premium="trust"] .ring-indigo-500,
+[data-premium="trust"] .ring-sky-500,
+[data-premium="trust"] .ring-blue-500 { --tw-ring-color: var(--c-accent) !important; }
+[data-premium="trust"] .ring-teal-500,
+[data-premium="trust"] .ring-lime-500 { --tw-ring-color: var(--c-green) !important; }
+[data-premium="trust"] .border-indigo-400,
+[data-premium="trust"] .border-sky-400,
+[data-premium="trust"] .border-blue-500 { border-color: var(--c-accent-line) !important; }
+[data-premium="trust"] .border-teal-400,
+[data-premium="trust"] .border-lime-400 { border-color: var(--c-green-line) !important; }
+
+/* ---- tenant テーマの primary ボタン（OrgPortal: blue/emerald/sky/indigo/teal/lime）を
+   すべて「リフォーム橙」へ統一し、どのテナント配色でも温かい reform 同一性にする。
+   bg-*-600 = ボタン地 / bg-*-700 = hover / bg-*-50 = 淡面 / border-*-400 = 選択枠。 ---- */
+[data-premium="trust"] .bg-emerald-600,
+[data-premium="trust"] .bg-teal-600,
+[data-premium="trust"] .bg-lime-600,
+[data-premium="trust"] .bg-indigo-600 { background-color: var(--c-accent) !important; }
+[data-premium="trust"] .bg-emerald-700,
+[data-premium="trust"] .bg-teal-700,
+[data-premium="trust"] .bg-lime-700,
+[data-premium="trust"] .bg-indigo-700,
+[data-premium="trust"] .hover\:bg-emerald-700:hover,
+[data-premium="trust"] .hover\:bg-teal-700:hover,
+[data-premium="trust"] .hover\:bg-lime-700:hover,
+[data-premium="trust"] .hover\:bg-indigo-700:hover,
+[data-premium="trust"] [class*="hover:bg-emerald-700"]:hover,
+[data-premium="trust"] [class*="hover:bg-teal-700"]:hover,
+[data-premium="trust"] [class*="hover:bg-lime-700"]:hover,
+[data-premium="trust"] [class*="hover:bg-indigo-700"]:hover { background-color: var(--c-accent-deep) !important; }
+[data-premium="trust"] .bg-emerald-50,
+[data-premium="trust"] .bg-teal-50,
+[data-premium="trust"] .bg-lime-50,
+[data-premium="trust"] .bg-indigo-50 { background-color: var(--c-accent-soft) !important; }
+[data-premium="trust"] .border-emerald-400,
+[data-premium="trust"] .border-indigo-400 { border-color: var(--c-accent-line) !important; }
+[data-premium="trust"] .focus\:ring-emerald-500:focus,
+[data-premium="trust"] .focus\:ring-teal-500:focus,
+[data-premium="trust"] .focus\:ring-lime-500:focus,
+[data-premium="trust"] .focus\:ring-indigo-500:focus,
+[data-premium="trust"] .focus\:ring-sky-500:focus { --tw-ring-color: var(--c-accent) !important; }
+/* indigo の primary 文字（link/text）も橙に。emerald/teal/lime の text は自然な
+   緑（status と共通）として温存 — リフォーム＝木・植栽の緑で違和感なし。 */
+[data-premium="trust"] .text-indigo-700,
+[data-premium="trust"] .text-indigo-600 { color: var(--c-accent) !important; }
+
+/* ---- status: success(green) / error(red) は意味色として温存（明面向けに調整） ---- */
+[data-premium="trust"] .text-green-700,
+[data-premium="trust"] .text-green-600,
+[data-premium="trust"] .text-green-500,
+[data-premium="trust"] .text-emerald-600,
+[data-premium="trust"] .text-emerald-700 { color: var(--c-green-deep) !important; }
+[data-premium="trust"] .bg-green-500 { background-color: var(--c-green) !important; }
+[data-premium="trust"] .bg-green-50,
+[data-premium="trust"] .bg-green-100 { background-color: var(--c-green-soft) !important; }
+[data-premium="trust"] .border-green-200,
+[data-premium="trust"] .border-green-400,
+[data-premium="trust"] .border-emerald-400 { border-color: var(--c-green-line) !important; }
+[data-premium="trust"] .text-red-700,
+[data-premium="trust"] .text-red-600,
+[data-premium="trust"] .text-red-500 { color: #c4452f !important; }
+[data-premium="trust"] .bg-red-50 { background-color: #fbeae6 !important; }
+[data-premium="trust"] .border-red-200 { border-color: #f0c4b9 !important; }
+/* yellow（★レーティング）は温存（明面で視認できるアンバーへ） */
+[data-premium="trust"] .text-yellow-500,
+[data-premium="trust"] .text-yellow-600 { color: #e0a818 !important; }
+[data-premium="trust"] .text-yellow-800 { color: #b07e10 !important; }
+[data-premium="trust"] .border-yellow-200 { border-color: #f0dca0 !important; }
+
+/* ---- gradient（pink/purple/indigo 等の AI-slop グラデ）を暖色トーンへ ----
+   markup は不変。Tailwind v4 は background-image: linear-gradient(var(--tw-gradient-stops))。
+   --tw-gradient-stops/-image を直接上書きし cascade を確実に勝ち取る。
+   「白背景紫グラデ」回避 + 親しみ（暖色）を担保。 */
+
+/* 鮮やかな pink/purple/indigo/blue/sky グラデ（CTA・バッジ等）→ 橙の上品デュオ。 */
+[data-premium="trust"] [class*="from-pink-5"],
+[data-premium="trust"] [class*="from-pink-6"],
+[data-premium="trust"] [class*="from-purple-5"],
+[data-premium="trust"] [class*="from-purple-6"],
+[data-premium="trust"] [class*="from-indigo-5"],
+[data-premium="trust"] [class*="from-indigo-6"],
+[data-premium="trust"] [class*="from-blue-5"],
+[data-premium="trust"] [class*="from-blue-6"],
+[data-premium="trust"] [class*="from-sky-5"],
+[data-premium="trust"] [class*="from-sky-6"] {
+  background-image: linear-gradient(135deg, #f0853f 0%, #e8732e 100%) !important;
+}
+/* hover で深まるグラデ → 橙レンジ内で微変化 */
+[data-premium="trust"] [class*="hover:from-purple-6"]:hover,
+[data-premium="trust"] [class*="hover:from-pink-6"]:hover {
+  background-image: linear-gradient(135deg, #e8732e 0%, #cf5f1f 100%) !important;
+}
+
+/* 装飾的な明るい/淡いグラデ（from-*-50 / to-*-50,100）→ 暖かい木目デュオ */
+[data-premium="trust"] [class*="from-pink-50"],
+[data-premium="trust"] [class*="from-purple-50"],
+[data-premium="trust"] [class*="from-blue-50"],
+[data-premium="trust"] [class*="from-sky-50"],
+[data-premium="trust"] [class*="from-indigo-50"] {
+  background-image: linear-gradient(135deg, #fcefe3 0%, #fbf3e8 100%) !important;
+}
+[data-premium="trust"] [class*="from-green-50"],
+[data-premium="trust"] [class*="from-emerald-50"] {
+  background-image: linear-gradient(135deg, #e7f4ec 0%, #f1f8f3 100%) !important;
+}
+
+/* bg-gradient-to-* で from/to 未指定（透明）になる装飾は淡いベージュ面を地に */
+[data-premium="trust"] [class*="bg-gradient-to-"] {
+  background-color: var(--c-surface-2);
+}
+/* 濃い橙グラデ面上の white テキストは白を維持（可読） */
+[data-premium="trust"] [class*="from-pink-5"] .text-white,
+[data-premium="trust"] [class*="from-purple-5"] .text-white,
+[data-premium="trust"] [class*="from-purple-6"] .text-white,
+[data-premium="trust"] [class*="from-sky-5"] .text-white {
+  color: #ffffff !important;
+}
+
+/* ---- 境界: 木のベージュ hairline に ---- */
+[data-premium="trust"] .border,
+[data-premium="trust"] .border-t,
+[data-premium="trust"] .border-b,
+[data-premium="trust"] .border-l-4 { border-color: var(--c-line) !important; }
+[data-premium="trust"] .border-gray-300,
+[data-premium="trust"] .border-gray-200 { border-color: var(--c-line) !important; }
+
+/* ---- 影: 柔らかく温かい影（親しみ）。near-black の「影なし hairline」から転換 ---- */
+[data-premium="trust"] .shadow,
+[data-premium="trust"] .shadow-sm,
+[data-premium="trust"] .shadow-md {
+  box-shadow: var(--shadow-soft) !important;
+}
+[data-premium="trust"] .shadow-lg {
+  box-shadow: var(--shadow-soft-lg) !important;
+}
+/* hover:shadow-lg → 柔らかく浮上 + 橙境界のヒント */
+[data-premium="trust"] .hover\:shadow-lg:hover {
+  box-shadow: var(--shadow-soft-lg) !important;
+  border-color: var(--c-accent-line) !important;
+  transform: translateY(-2px);
+}
+
+/* ---- 角丸: 大きめ（親しみ・やわらかさ） ---- */
+[data-premium="trust"] .rounded-xl { border-radius: var(--r-lg) !important; }
+[data-premium="trust"] .rounded-lg { border-radius: var(--r-md) !important; }
+[data-premium="trust"] .rounded-md { border-radius: var(--r-sm) !important; }
+[data-premium="trust"] .rounded { border-radius: var(--r-sm) !important; }
+/* full（ピル / アバター）はそのまま丸 */
+
+/* =============================================================================
+   コンポーネント微調整（色トークン適用後の質感）
+   ============================================================================= */
+
+/* カード面: 純白 + やわらかい影 + 木の境界 + なめらかな hover 遷移 */
+[data-premium="trust"] .bg-white.rounded-xl,
+[data-premium="trust"] .bg-white[class*="rounded"] {
+  background-color: var(--c-surface) !important;
+  border-color: var(--c-line);
+  transition: box-shadow 0.4s var(--ease), transform 0.4s var(--ease),
+    border-color 0.4s var(--ease);
+}
+
+/* フォーム要素 — 淡ベージュ面 + 木の境界 + 橙 focus */
+[data-premium="trust"] input,
+[data-premium="trust"] select,
+[data-premium="trust"] textarea {
+  background-color: var(--c-surface) !important;
+  color: var(--c-text) !important;
+  border-color: var(--c-line-strong) !important;
+}
+[data-premium="trust"] input::placeholder,
+[data-premium="trust"] textarea::placeholder {
+  color: var(--c-faint);
+}
+[data-premium="trust"] select option {
+  background-color: var(--c-surface);
+  color: var(--c-text);
+}
+
+/* 入力 / ボタンの最小タッチターゲット 44px（a11y） */
+[data-premium="trust"] input,
+[data-premium="trust"] select,
+[data-premium="trust"] textarea,
+[data-premium="trust"] button,
+[data-premium="trust"] a.inline-flex {
+  min-height: 44px;
+}
+[data-premium="trust"] textarea { min-height: 96px; }
+[data-premium="trust"] button[aria-label] { min-height: 0; }
+
+/* primary ボタンに柔らかい橙影でクリック感（CTA を明るく目立たせる）。
+   全 tenant テーマの primary 地（→橙に remap 済み）に共通で適用。 */
+[data-premium="trust"] .bg-blue-600.text-white,
+[data-premium="trust"] .bg-sky-600.text-white,
+[data-premium="trust"] .bg-emerald-600.text-white,
+[data-premium="trust"] .bg-teal-600.text-white,
+[data-premium="trust"] .bg-lime-600.text-white,
+[data-premium="trust"] .bg-indigo-600.text-white,
+[data-premium="trust"] .bg-pink-500 {
+  box-shadow: 0 4px 14px rgba(232, 115, 46, 0.28) !important;
+}
+
+/* リンク下線: 橙を保ちつつ控えめに */
+[data-premium="trust"] a.underline { text-decoration-color: var(--c-accent-line); }
+
+/* eyebrow 風: ロゴ右の説明テキスト */
+[data-premium="trust"] nav .text-sm.text-gray-500 {
+  letter-spacing: 0.02em;
+}
+
+/* =============================================================================
+   sticky nav — 明るい白 → スクロールで すりガラス白 + 木の hairline
+   ============================================================================= */
+[data-premium="trust"] nav.sticky,
+[data-premium="trust"] header.sticky {
+  background-color: rgba(255, 253, 249, 0.75) !important;
+  backdrop-filter: blur(6px) saturate(115%);
+  -webkit-backdrop-filter: blur(6px) saturate(115%);
+  border-color: transparent !important;
+  transition: background-color 0.4s var(--ease), border-color 0.4s var(--ease),
+    box-shadow 0.4s var(--ease), backdrop-filter 0.4s var(--ease);
+}
+[data-premium="trust"] nav.sticky.is-scrolled,
+[data-premium="trust"] header.sticky.is-scrolled {
+  background-color: rgba(255, 253, 249, 0.92) !important;
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  border-bottom: 1px solid var(--c-line) !important;
+  box-shadow: 0 4px 18px rgba(120, 96, 60, 0.07) !important;
+}
+/* wordmark を親しみのある太字に + 橙のヒント */
+[data-premium="trust"] nav a.font-bold,
+[data-premium="trust"] header a.font-bold {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--c-text) !important;
+}
+
+/* =============================================================================
+   画像 — hover micro-zoom 1.05（既存 <img> をラップ無しで）
+   ============================================================================= */
+[data-premium="trust"] .overflow-hidden img {
+  transition: transform 0.6s var(--ease), filter 0.6s var(--ease);
+  will-change: transform;
+}
+[data-premium="trust"] .overflow-hidden:hover img {
+  transform: scale(1.05);
+}
+/* 明面に馴染ませる微トーン（写真は維持・画像差し替えはしない） */
+[data-premium="trust"] .bg-white.rounded-xl .overflow-hidden img {
+  filter: saturate(1.02) brightness(1.01);
+}
+
+/* =============================================================================
+   accessibility — focus-visible（橙リング）
+   ============================================================================= */
+[data-premium="trust"] a:focus-visible,
+[data-premium="trust"] button:focus-visible,
+[data-premium="trust"] input:focus-visible,
+[data-premium="trust"] select:focus-visible,
+[data-premium="trust"] textarea:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* =============================================================================
+   scroll-reveal & parallax — fade + translateY 28px / stagger（reveal.ts 連携）
+   ============================================================================= */
+[data-premium="trust"] [data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+[data-premium="trust"] [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+[data-premium="trust"] [data-premium-parallax] {
+  will-change: transform;
+}
+
+/* =============================================================================
+   headline reveal — 各セクション見出しを独立して上品にスライド reveal
+   ============================================================================= */
+[data-premium="trust"] [data-reveal-head] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.85s var(--ease), transform 0.85s var(--ease);
+  transition-delay: 90ms;
+  will-change: opacity, transform;
+}
+[data-premium="trust"] [data-reveal-head].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* =============================================================================
+   image parallax — 写真の小振幅 縦パララックス（headroom を確保して隙間を出さない）
+   ============================================================================= */
+[data-premium="trust"] [data-premium-parallax="img"] {
+  will-change: auto;
+}
+[data-premium="trust"] [data-premium-parallax="img"] > img {
+  height: calc(100% + 24px);
+  margin-top: -12px;
+  will-change: transform;
+  transform: translate3d(0, var(--px-y, 0px), 0);
+  transition: transform 0.12s linear;
+}
+[data-premium="trust"] [data-premium-parallax="img"]:hover > img {
+  transform: scale(1.05) translate3d(0, var(--px-y, 0px), 0);
+  transition: transform 0.6s var(--ease);
+}
+
+/* =============================================================================
+   hero ambient — トップ section の背景に「やわらかな光」が常時漂う（暖色 / 明地用）
+   明るい白地では screen blend は効かない → 通常 blend の半透明 暖色グロー。
+   compositor only(transform/opacity)。紫/ネオン/白背景紫グラデ 禁止 — 親しみのある
+   暖かい橙〜陽だまり〜緑の光がゆっくり漂う。
+   ============================================================================= */
+[data-premium="trust"] [data-premium-hero] {
+  position: relative;
+  isolation: isolate;
+}
+[data-premium="trust"] .premium-hero-ambient {
+  position: absolute;
+  /* 親 section は height:auto のため % 高さは 0 に潰れる → svh/px で確実に高さを持たせる。 */
+  top: -140px;
+  right: -14%;
+  left: -14%;
+  bottom: auto;
+  height: clamp(560px, 92svh, 920px);
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  will-change: transform;
+}
+/* hero 写真（明るいリビング /hero.jpg）— full-bleed cover を ambient 内最背面に敷く。
+   ambient コンテナは section から左右に -14% はみ出し top:-140px なので、写真はそれを
+   full cover し、scrim と暖色グローはその上に重なる。 */
+[data-premium="trust"] .premium-hero-photo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+[data-premium="trust"] .premium-hero-photo > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 46%;
+  /* 継続 Ken Burns: scale 1↔1.08 を 20s で往復（compositor only / transform のみ）。
+     明るい写真をやわらかく拡縮し「明るいリビング」を生き生きと見せる。 */
+  transform-origin: 52% 44%;
+  will-change: transform;
+  animation: premium-hero-kenburns 20s ease-in-out infinite alternate;
+  /* 明面トーンに馴染ませる微トーン（写真の差し替えはしない） */
+  filter: saturate(1.02) brightness(1.01);
+}
+@keyframes premium-hero-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+/* scrim — 明るい写真の上に「白〜淡い暖色の半透明グラデ」を軽く敷く。
+   リビング写真がはっきり見えることを最優先にし、全面の白被りは薄める
+   （上 ~0.45 / 下 ~0.30）。見出し（温かい墨色）は左上に置かれるため、
+   左上のみ淡い白グラデで局所的に底上げして WCAG AA を確保し、右側の室内は見せる。
+   検索 UI は各カードが白背景を持つため scrim 非依存で AA を満たす。 */
+[data-premium="trust"] .premium-hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    /* 見出し直下（左上）だけを守る局所グラデ。右側の室内には掛けない。 */
+    radial-gradient(
+      90% 66% at 22% 24%,
+      rgba(255, 253, 249, 0.62),
+      rgba(255, 253, 249, 0.22) 46%,
+      transparent 70%
+    ),
+    /* 全面は薄い白被りのみ（写真が明確に視認できる濃度） */
+    linear-gradient(
+      180deg,
+      rgba(255, 253, 249, 0.45) 0%,
+      rgba(252, 247, 240, 0.38) 38%,
+      rgba(250, 247, 242, 0.32) 68%,
+      rgba(250, 247, 242, 0.30) 100%
+    );
+}
+
+[data-premium="trust"] .premium-hero-ambient__inner {
+  position: absolute;
+  inset: -18%;
+  /* 暖かい陽だまりの光（明地で確実に知覚できる濃度・通常 blend）。
+     橙(主役)・蜂蜜色・木漏れ日。誇張/ネオン/紫は禁止。 */
+  background:
+    radial-gradient(38% 34% at 24% 18%, rgba(244, 162, 97, 0.50), transparent 62%),
+    radial-gradient(34% 30% at 80% 12%, rgba(248, 196, 120, 0.46), transparent 60%),
+    radial-gradient(50% 42% at 52% 110%, rgba(232, 115, 46, 0.26), transparent 66%);
+  opacity: 0.9;
+  /* 明るい白地: 通常 blend（screen は効かない）。やわらかく重なる暖色光。 */
+  mix-blend-mode: normal;
+  filter: blur(6px);
+  will-change: transform, opacity;
+  transform-origin: 28% 18%;
+  /* 円環ドリフト（0%=100% でシームレス）を linear で常時等速ループ。 */
+  animation: premium-hero-drift 6.5s linear infinite;
+}
+/* 第二層: 別周期・別パス + 緑の木漏れ日で、どの瞬間も連続モーションを保証する。 */
+[data-premium="trust"] .premium-hero-ambient__inner--b {
+  background:
+    radial-gradient(40% 36% at 72% 24%, rgba(248, 196, 120, 0.42), transparent 62%),
+    radial-gradient(34% 32% at 16% 34%, rgba(122, 192, 138, 0.30), transparent 60%);
+  opacity: 0.82;
+  transform-origin: 74% 26%;
+  animation: premium-hero-drift-b 5s linear infinite;
+}
+/* hero 内の実コンテンツを ambient より前面へ（構造は変えず z だけ底上げ） */
+[data-premium="trust"] [data-premium-hero] > *:not(.premium-hero-ambient) {
+  position: relative;
+  z-index: 1;
+}
+/* 円環ドリフト（時計回り）: 0%=100% でシームレス。等速ループで停止点なし。 */
+@keyframes premium-hero-drift {
+  0% {
+    transform: translate3d(-16%, -10%, 0) scale(1.04);
+    opacity: 0.46;
+  }
+  25% {
+    transform: translate3d(16%, -8%, 0) scale(1.22);
+    opacity: 0.96;
+  }
+  50% {
+    transform: translate3d(15%, 11%, 0) scale(1.1);
+    opacity: 0.58;
+  }
+  75% {
+    transform: translate3d(-15%, 10%, 0) scale(1.24);
+    opacity: 0.92;
+  }
+  100% {
+    transform: translate3d(-16%, -10%, 0) scale(1.04);
+    opacity: 0.46;
+  }
+}
+/* 円環ドリフト（反時計回り）: 別位相・逆回りで常に動きを残す。 */
+@keyframes premium-hero-drift-b {
+  0% {
+    transform: translate3d(15%, 10%, 0) scale(1.18);
+    opacity: 0.4;
+  }
+  25% {
+    transform: translate3d(-15%, 9%, 0) scale(1);
+    opacity: 0.88;
+  }
+  50% {
+    transform: translate3d(-14%, -11%, 0) scale(1.2);
+    opacity: 0.5;
+  }
+  75% {
+    transform: translate3d(14%, -9%, 0) scale(1.02);
+    opacity: 0.84;
+  }
+  100% {
+    transform: translate3d(15%, 10%, 0) scale(1.18);
+    opacity: 0.4;
+  }
+}
+
+/* countup 中の数値は等幅で桁ブレを防ぐ（レイアウトシフト回避） */
+[data-premium="trust"] [data-countup] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* =============================================================================
+   reduced-motion — 即最終状態・全演出停止
+   ============================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  [data-premium="trust"] [data-reveal],
+  [data-premium="trust"] [data-reveal-head] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  [data-premium="trust"] .overflow-hidden:hover img {
+    transform: none;
+  }
+  [data-premium="trust"] .hover\:shadow-lg:hover {
+    transform: none;
+  }
+  [data-premium="trust"] [data-premium-parallax] {
+    transform: none !important;
+  }
+  [data-premium="trust"] [data-premium-parallax="img"] > img {
+    transform: none !important;
+    height: 100%;
+    margin-top: 0;
+  }
+  [data-premium="trust"] [data-premium-parallax="img"]:hover > img {
+    transform: none !important;
+  }
+  [data-premium="trust"] .premium-hero-ambient,
+  [data-premium="trust"] .premium-hero-ambient__inner {
+    animation: none !important;
+    transform: none !important;
+  }
+  /* reduced-motion: hero 写真の Ken Burns を即停止（静止表示）。scrim は静的なので影響なし。 */
+  [data-premium="trust"] .premium-hero-photo > img {
+    animation: none !important;
+    transform: none !important;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-rounded-body), var(--font-rounded),
+    "M PLUS Rounded 1c", system-ui, sans-serif;
+}
+
+/* =============================================================================
+   Bespoke components (v9) — hero band / icon thumbs / monogram logos.
+   絵文字・外部AI画像を廃し、木×白の編集的な見た目へ。data-premium スコープ。
+   ============================================================================= */
+[data-premium="trust"] .hero-band {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid var(--c-line);
+  padding: clamp(28px, 5vw, 56px);
+  background:
+    radial-gradient(120% 150% at 86% -25%, var(--c-accent-soft), transparent 52%),
+    linear-gradient(160deg, #fffdf9 0%, var(--c-bg-2) 100%);
+  box-shadow: 0 18px 48px -34px rgba(44, 42, 38, .5);
+}
+[data-premium="trust"] .hero-band__grid {
+  position: absolute; inset: 0; pointer-events: none; opacity: .55;
+  background-image:
+    linear-gradient(var(--c-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--c-line) 1px, transparent 1px);
+  background-size: 30px 30px;
+  -webkit-mask-image: radial-gradient(82% 110% at 82% 0%, #000, transparent 70%);
+          mask-image: radial-gradient(82% 110% at 82% 0%, #000, transparent 70%);
+}
+[data-premium="trust"] .hero-band__inner { position: relative; max-width: 720px; }
+[data-premium="trust"] .hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .76rem; font-weight: 700; letter-spacing: .1em;
+  color: var(--c-accent-deep);
+  background: var(--c-surface); border: 1px solid var(--c-accent-line);
+  padding: 6px 14px; border-radius: 999px; margin-bottom: 20px;
+}
+[data-premium="trust"] .hero-title {
+  font-family: var(--font-rounded), "M PLUS Rounded 1c", sans-serif;
+  font-weight: 700; color: var(--c-text);
+  font-size: clamp(1.85rem, 4.6vw, 3rem); line-height: 1.34;
+  letter-spacing: .004em; margin: 0 0 16px;
+}
+[data-premium="trust"] .hero-sub {
+  color: var(--c-muted); font-size: clamp(.95rem, 1.6vw, 1.08rem);
+  line-height: 1.95; max-width: 560px; margin: 0;
+}
+[data-premium="trust"] .hero-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+[data-premium="trust"] .hero-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .85rem; font-weight: 500; color: var(--c-text);
+  background: var(--c-surface); border: 1px solid var(--c-line);
+  padding: 9px 16px; border-radius: 12px;
+}
+[data-premium="trust"] .hero-chip svg { color: var(--c-accent); }
+
+/* category placeholder thumbs (脱・外部AI画像) */
+[data-premium="trust"] .case-thumb {
+  border-radius: 12px; overflow: hidden; border: 1px solid var(--c-line);
+}
+[data-premium="trust"] .case-thumb__ph,
+[data-premium="trust"] .case-mini {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--c-accent);
+  background:
+    radial-gradient(120% 130% at 28% 0%, var(--c-accent-soft), transparent 60%),
+    var(--c-bg-2);
+}
+[data-premium="trust"] .case-mini {
+  border-radius: 10px; border: 1px solid var(--c-line); color: var(--c-muted);
+}
+
+/* monogram logo tile (脱・外部ロゴ画像) */
+[data-premium="trust"] .logo-tile {
+  flex-shrink: 0; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-rounded), sans-serif; font-weight: 700;
+  font-size: 1.5rem; color: var(--c-accent-ink);
+  background: linear-gradient(150deg, var(--c-accent) 0%, var(--c-accent-deep) 120%);
+  box-shadow: 0 8px 18px -10px rgba(232, 115, 46, .6);
+}
+
+/* custom select chevron (脱・素のselect) */
+[data-premium="trust"] select {
+  -webkit-appearance: none; -moz-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236f6a60' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px !important;
+}
+
+/* category cards: subtle lift + clearer selected ring */
+[data-premium="trust"] button.rounded-xl[aria-pressed] {
+  transition: transform .3s var(--ease), border-color .3s var(--ease),
+    background-color .3s var(--ease), box-shadow .3s var(--ease);
+}
+[data-premium="trust"] button.rounded-xl[aria-pressed="false"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -16px rgba(44, 42, 38, .5);
+}
+[data-premium="trust"] button.rounded-xl[aria-pressed="true"] {
+  box-shadow: 0 0 0 1px var(--c-accent-line) inset, 0 10px 22px -16px rgba(232, 115, 46, .5);
 }
