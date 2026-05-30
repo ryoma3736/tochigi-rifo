@@ -9,16 +9,23 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^3",
+    "axios": "^1.13.2",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.554.0",
     "next": "16.0.3",
+    "nodemailer": "^6",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "nodemailer": "^6",
+    "recharts": "^3.4.1",
+    "sonner": "^2.0.7",
     "stripe": "^14",
-    "@stripe/stripe-js": "^3"
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^7.0.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",

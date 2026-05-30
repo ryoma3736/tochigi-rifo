@@ -3,7 +3,8 @@ import Stripe from "stripe"
 
 export const runtime = "nodejs"
 
-export async function POST(req: NextRequest, { params }: { params: { org: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ org: string }> }) {
+  const { org } = await params
   const secret = process.env.STRIPE_SECRET_KEY
   const priceId = process.env.STRIPE_PRICE_ID_100K
   if (!secret || !priceId) {
@@ -17,9 +18,9 @@ export async function POST(req: NextRequest, { params }: { params: { org: string
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/${params.org}?checkout=success`,
-      cancel_url: `${origin}/${params.org}/subscribe?checkout=cancel`,
-      metadata: { org: params.org },
+      success_url: `${origin}/${org}?checkout=success`,
+      cancel_url: `${origin}/${org}/subscribe?checkout=cancel`,
+      metadata: { org },
     })
     return NextResponse.json({ url: session.url, id: session.id })
   } catch (error) {

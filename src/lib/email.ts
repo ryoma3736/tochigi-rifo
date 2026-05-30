@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer"
-import { companies } from "@/data/companies"
+import { companies, type Company } from "@/data/companies"
 
 export type InquiryPayload = {
   name: string
@@ -53,7 +53,7 @@ function resolveRecipients(ids: string[]): { email: string; name: string }[] {
   const map = new Map(companies.map((c) => [c.id, c]))
   return ids
     .map((id) => map.get(id))
-    .filter((c): c is { email: string; name: string } => !!c && typeof c.email === "string" && typeof c.name === "string")
+    .filter((c): c is Company & { email: string; name: string } => !!c && typeof c.email === "string" && typeof c.name === "string")
     .map((c) => ({ email: c.email, name: c.name }))
 }
 
